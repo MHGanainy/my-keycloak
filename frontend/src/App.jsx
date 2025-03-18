@@ -1,12 +1,14 @@
-import './App.css'
-import HomePage from './pages/HomePage'
-import { KeycloakProvider } from './context/KeycloakContext'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import Layout from './components/Layout'
-import ErrorBoundary from './context/ErrorBoundary'
-import MyAccount from './pages/MyAccount'
-import SimpleItems from './pages/SimpleItems'
-import AdminPage from './pages/AdminPage'
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './App.css';
+import './custom.css';  // Import our custom CSS
+import HomePage from './pages/HomePage';
+import { KeycloakProvider } from './context/KeycloakContext';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Layout from './components/Layout';
+import ErrorBoundary from './context/ErrorBoundary';
+import MyAccount from './pages/MyAccount';
+import SimpleItems from './pages/SimpleItems';
+import AdminPage from './pages/AdminPage';
 
 function App() {
   return (
@@ -50,7 +52,7 @@ function App() {
         </ErrorBoundary>
       </BrowserRouter>
     </KeycloakProvider>
-  )
+  );
 }
 
-export default App
+export default App;

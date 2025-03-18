@@ -40,7 +40,7 @@ app.use(cors());
 
 app.get('/api/items', 
   jwtVerifier.verifyToken(), 
-  jwtVerifier.requireRoles('admin'), 
+  // jwtVerifier.requireRoles('admin'), 
   (req, res) => {
     // Example secured data
     res.json({
