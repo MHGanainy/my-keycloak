@@ -1,5 +1,6 @@
+// frontend/src/components/Layout.jsx
 import React from 'react';
-import { Container, Navbar, Nav, Button, Badge } from 'react-bootstrap';
+import { Container, Navbar, Nav, Button, Badge, Dropdown } from 'react-bootstrap';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import useKeycloak from '../hooks/useKeycloak';
 
@@ -7,6 +8,7 @@ const Layout = ({ children }) => {
   const { keycloak, authenticated, hasRole } = useKeycloak();
   const navigate = useNavigate();
   const location = useLocation();
+  const isAdmin = hasRole('admin');
 
   const handleLogin = () => {
     if (keycloak) {
@@ -37,7 +39,7 @@ const Layout = ({ children }) => {
               className="d-inline-block align-top me-2" 
               alt="Logo" 
             />
-            My Secure App
+            Document Management
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
@@ -47,33 +49,54 @@ const Layout = ({ children }) => {
               </Nav.Link>
               {authenticated && (
                 <>
-                  <Nav.Link as={Link} to="/simple-items" className={isActive('/simple-items')}>
-                    My Items
+                  <Nav.Link as={Link} to="/documents" className={isActive('/documents') || location.pathname.startsWith('/documents/')}>
+                    Documents
                   </Nav.Link>
                   <Nav.Link as={Link} to="/my-account" className={isActive('/my-account')}>
                     My Account
                   </Nav.Link>
                   
                   {/* Show Admin tab only for users with admin role */}
-                  {hasRole('admin') && (
+                  {isAdmin && (
                     <Nav.Link as={Link} to="/admin" className={isActive('/admin')}>
-                      Admin <Badge bg="warning" text="dark" className="ms-1">Privileged</Badge>
+                      Admin <Badge bg="warning" text="dark" className="ms-1">Admin</Badge>
                     </Nav.Link>
                   )}
                 </>
               )}
             </Nav>
             <Nav>
-              {authenticated && keycloak?.idTokenParsed?.preferred_username && (
-                <Navbar.Text className="me-3">
-                  <i className="bi bi-person-circle me-1"></i>
-                  <strong>{keycloak.idTokenParsed.preferred_username}</strong>
-                </Navbar.Text>
-              )}
               {authenticated ? (
-                <Button variant="outline-primary" onClick={handleLogout}>
-                  <i className="bi bi-box-arrow-right me-1"></i> Logout
-                </Button>
+                <Dropdown align="end">
+                  <Dropdown.Toggle as="div" className="d-inline-block user-dropdown">
+                    <div className="d-flex align-items-center">
+                      <div className="avatar-circle me-2">
+                        {keycloak?.idTokenParsed?.preferred_username?.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="me-2 d-none d-sm-inline">
+                        {keycloak?.idTokenParsed?.preferred_username}
+                      </span>
+                      <i className="bi bi-chevron-down small"></i>
+                    </div>
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu>
+                    <Dropdown.Item as={Link} to="/my-account">
+                      <i className="bi bi-person me-2"></i> My Account
+                    </Dropdown.Item>
+                    <Dropdown.Item as={Link} to="/documents">
+                      <i className="bi bi-file-earmark-text me-2"></i> My Documents
+                    </Dropdown.Item>
+                    {isAdmin && (
+                      <Dropdown.Item as={Link} to="/admin">
+                        <i className="bi bi-shield-lock me-2"></i> Admin Dashboard
+                      </Dropdown.Item>
+                    )}
+                    <Dropdown.Divider />
+                    <Dropdown.Item onClick={handleLogout}>
+                      <i className="bi bi-box-arrow-right me-2"></i> Logout
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
               ) : (
                 <Button variant="primary" onClick={handleLogin}>
                   <i className="bi bi-box-arrow-in-right me-1"></i> Login
@@ -96,28 +119,61 @@ const Layout = ({ children }) => {
         <Container>
           <div className="row">
             <div className="col-md-4">
-              <h5 className="text-dark">My Secure App</h5>
-              <p className="small">A secure application powered by Keycloak, React, and Bootstrap</p>
+              <h5 className="text-dark">Document Management</h5>
+              <p className="small">A secure document management system powered by Keycloak, React, and Bootstrap</p>
             </div>
             <div className="col-md-4">
               <h5 className="text-dark">Quick Links</h5>
               <ul className="list-unstyled">
                 <li><Link to="/" className="text-decoration-none">Home</Link></li>
+                {authenticated && <li><Link to="/documents" className="text-decoration-none">Documents</Link></li>}
                 {authenticated && <li><Link to="/my-account" className="text-decoration-none">My Account</Link></li>}
-                {authenticated && <li><Link to="/simple-items" className="text-decoration-none">My Items</Link></li>}
               </ul>
             </div>
             <div className="col-md-4">
-              <h5 className="text-dark">Contact</h5>
+              <h5 className="text-dark">Information</h5>
               <p className="small">
-                <i className="bi bi-envelope me-2"></i> contact@mysecureapp.com
+                <i className="bi bi-envelope me-2"></i> support@docmanagement.com
+              </p>
+              <p className="small">
+                <i className="bi bi-shield-lock me-2"></i> Secured with Keycloak Authentication
               </p>
             </div>
           </div>
           <hr />
-          <p className="mb-0">&copy; {new Date().getFullYear()} My Secure Application. All rights reserved.</p>
+          <p className="mb-0">&copy; {new Date().getFullYear()} Document Management System. All rights reserved.</p>
         </Container>
       </footer>
+      
+      <style jsx>{`
+        .avatar-circle {
+          width: 32px;
+          height: 32px;
+          background-color: var(--primary-color);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-weight: bold;
+        }
+        
+        .user-dropdown {
+          cursor: pointer;
+          padding: 0.5rem 0;
+        }
+        
+        .nav-link.active::after {
+          content: '';
+          position: absolute;
+          bottom: -5px;
+          left: 0;
+          width: 100%;
+          height: 3px;
+          background-color: var(--primary-color);
+          border-radius: 3px;
+        }
+      `}</style>
     </div>
   );
 };

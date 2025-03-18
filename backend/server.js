@@ -1,13 +1,17 @@
+// backend/server.js
 require('dotenv').config();
 const cors = require('cors');
 const express = require('express');
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
 // Import JWT verification middleware
-const jwtVerifier = require('#middlewares/jwt-verifier');
+const jwtVerifier = require('./middlewares/jwt-verifier');
 
-// Routes
+// Import routes
+const documentRoutes = require('./routes/documents');
+
 const errorHandler = (error, req, res, next) => {
+  console.error('Error:', error);
   const status = error.status || 422;
   res.status(status).send(error.message);
 }
@@ -38,21 +42,36 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(cors());
 
+// Apply routes
+app.use('/api/documents', documentRoutes);
+
+// Legacy routes
 app.get('/api/items', 
   jwtVerifier.verifyToken(), 
-  // jwtVerifier.requireRoles('admin'), 
   (req, res) => {
-    // Example secured data
+    // Redirect to documents endpoint
+    const username = req.user.preferred_username;
+    const isAdmin = req.user.realm_access && 
+                   req.user.realm_access.roles && 
+                   req.user.realm_access.roles.includes('admin');
+    
+    // Return a message about the updated API
     res.json({
+      message: "API updated! Please use /api/documents instead of /api/items",
       items: [
-        { id: 1, name: 'Item One' },
-        { id: 2, name: 'Item Two' }
+        { id: 1, name: 'Please use the documents API' },
+        { id: 2, name: 'This endpoint is deprecated' }
       ]
     });
+});
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 app.use(errorHandler);
 
 app.listen(port, () => {
-  console.log(`Server Started at ${port}`);
+  console.log(`Document Management API Server Started at ${port}`);
 });
